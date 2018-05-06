@@ -1,0 +1,10 @@
+break heap_malloc
+break func.c:48
+run
+disp bp
+disp HDRP(bp)
+disp FTRP(bp)
+disp GET_BLK_SZ(bp) 
+disp GET_BLK_SZ(bp) 
+disp GET_ALLOC(bp) 
+disp *(HDRP(bp))

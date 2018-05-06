@@ -13,7 +13,7 @@
  * begin                                                          end
  * heap                                                           heap  
  *  -----------------------------------------------------------------   
- * |  pad   | hdr(8:a) | ftr(8:a) | zero or more usr blks | hdr(0:a) |
+* |  pad   | hdr(8:a) | ftr(8:a) | zero or more usr blks | hdr(0:a) |
  *  -----------------------------------------------------------------
  *          |       prologue      |                       | epilogue |
  *          |         block       |                       | block    |

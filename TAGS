@@ -1,0 +1,56 @@
+
+tests/tests.c,24
+void test1()test14,38
+
+include/test.h,0
+
+include/func.h,0
+
+main.c,21
+int main()main4,37
+
+src/func.c,486
+#define h_sz h_sz2,20
+#define b_sz b_sz3,69
+#define GET(GET7,214
+#define PUT(PUT8,258
+typedef unsigned char byte;byte10,313
+const byte word_sz = sizeof(unsigned int*);word_sz11,341
+#define get_block_sz(get_block_sz14,442
+#define get_alloc(get_alloc15,483
+static void *heap_p;heap_p17,520
+const byte heap_sz = 1<<10;heap_sz18,541
+void heap_malloc()	// initial heap initheap_malloc20,570
+void* m_malloc(unsigned sz)m_malloc25,642
+void heap_free()heap_free30,686
+
+make_tags.sh,0
+
+mm-implicit.c,1137
+team_t team = {"","","","",""}; /* so we're compatible with 15213 driver */team28,1113
+#define WSIZE WSIZE31,1223
+#define DSIZE DSIZE32,1277
+#define CHUNKSIZE CHUNKSIZE33,1335
+#define OVERHEAD OVERHEAD34,1395
+#define MAX(MAX36,1468
+#define PACK(PACK39,1560
+#define GET(GET42,1648
+#define PUT(PUT43,1692
+#define GET_SIZE(GET_SIZE46,1803
+#define GET_ALLOC(GET_ALLOC47,1840
+#define HDRP(HDRP50,1944
+#define FTRP(FTRP51,1992
+#define NEXT_BLKP(NEXT_BLKP54,2130
+#define PREV_BLKP(PREV_BLKP55,2203
+static char *heap_listp;   heap_listp58,2340
+int mm_init(void) mm_init71,2699
+void *mm_malloc(size_t size) mm_malloc91,3349
+void mm_free(void *bp)mm_free124,4137
+void *mm_realloc(void *ptr, size_t size)mm_realloc135,4356
+void mm_checkheap(int verbose) mm_checkheap143,4477
+static void *extend_heap(size_t words) extend_heap171,5146
+static void place(void *bp, size_t asize)place194,5895
+static void *find_fit(size_t asize)find_fit214,6347
+static void *coalesce(void *bp) coalesce230,6695
+static void printblock(void *bp) printblock263,7600
+static void checkblock(void *bp) checkblock282,8012
