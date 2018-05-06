@@ -47,14 +47,17 @@ const byte is_alloc = 1;
 void* heap_malloc()	// initial heap init
 {
 	const unsigned full_heap_sz = heap_sz + header_sz + footer_sz;
-	start_heap_p = malloc(full_heap_sz + header_sz);	// allocate mem for heap and offset header
+	start_heap_p = malloc(full_heap_sz);	// allocate mem for heap and offset header
 																										// offset header used to check end of heap
 	void *bp = start_heap_p + header_sz;					// move to start of block
 
+	PUT(HDRP(bp), PACK(0, is_alloc));	//	set offset header
+	PUT(FTRP(bp), PACK(0, is_alloc));	//	set offset footer
+
+	bp += header_sz;	//	move to the actual heap
+
 	PUT(HDRP(bp), PACK(heap_sz, is_free));	//	set size of block and that it is free
 	PUT(FTRP(bp), PACK(heap_sz, is_free));
-
-	PUT(FTRP(bp) + header_sz, PACK(0, is_alloc));	// set offset header as size 0 and not free
 
 	return bp;
 }
