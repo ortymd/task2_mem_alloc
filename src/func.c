@@ -67,7 +67,7 @@ void* m_malloc(unsigned sz)
 	void *bp = start_heap_p + header_sz;					// move to start of block
 	while(GET_BLK_SZ(bp) != 0)
 	{
-		if( GET_BLK_SZ(bp) > sz && GET_ALLOC(bp) == 0) 
+		if( GET_BLK_SZ(bp) >= sz && GET_ALLOC(bp) == 0) 
 		{
 			allocate_block(&bp, sz);
 			break;
@@ -87,6 +87,18 @@ void* allocate_block(void **bp_addr, unsigned sz)
 	PUT(FTRP(bp), PACK(sz, is_alloc));
 
 	return bp;
+}
+
+void m_free(void *bp)
+{
+	free_block(bp);
+}
+
+void free_block(void *bp)
+{
+	unsigned sz = GET_BLK_SZ(HDRP(bp));
+	PUT(HDRP(bp), PACK(sz, is_free));	//	set size of block and that it is freeated 
+	PUT(FTRP(bp), PACK(sz, is_free));
 }
 
 void heap_free()
