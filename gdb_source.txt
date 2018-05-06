@@ -1,5 +1,5 @@
 break heap_malloc
-break func.c:48
+break func.c:72
 run
 disp bp
 disp HDRP(bp)

@@ -5,6 +5,8 @@
 // block start					block end
 
 #include <stdlib.h>
+#include <func.h>
+
 #define block_sz 15	/*	bits used to store size of given bloc. if 9 (as in this case)
 										max size of block is 1023.*/
 
@@ -45,11 +47,14 @@ const byte is_alloc = 1;
 void* heap_malloc()	// initial heap init
 {
 	const unsigned full_heap_sz = heap_sz + header_sz + footer_sz;
-	start_heap_p = malloc(full_heap_sz);		// get all mem
+	start_heap_p = malloc(full_heap_sz + header_sz);	// allocate mem for heap and offset header
+																										// offset header used to check end of heap
 	void *bp = start_heap_p + header_sz;					// move to start of block
 
 	PUT(HDRP(bp), PACK(heap_sz, is_free));	//	set size of block and that it is free
 	PUT(FTRP(bp), PACK(heap_sz, is_free));
+
+	PUT(FTRP(bp) + header_sz, PACK(0, is_alloc));	// set offset header as size 0 and not free
 
 	return bp;
 }
@@ -62,18 +67,26 @@ void* m_malloc(unsigned sz)
 	void *bp = start_heap_p + header_sz;					// move to start of block
 	while(GET_BLK_SZ(bp) != 0)
 	{
-		if( GET_BLK_SZ(bp) > sz ) 
+		if( GET_BLK_SZ(bp) > sz && GET_ALLOC(bp) == 0) 
 		{
-			//bp = allocate_block(sz);
+			allocate_block(&bp, sz);
+			break;
 		}
-		else
-		{
-			;
-		}
+
 		bp = NEXT_BLKP(bp);
 	}
 
-	return 0;
+	return bp;
+}
+
+void* allocate_block(void **bp_addr, unsigned sz)
+{
+	void *bp = *bp_addr;
+	bp = bp + header_sz;
+	PUT(HDRP(bp), PACK(sz, is_alloc));	//	set size of block and that it is allocated 
+	PUT(FTRP(bp), PACK(sz, is_alloc));
+
+	return bp;
 }
 
 void heap_free()
