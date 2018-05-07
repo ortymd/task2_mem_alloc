@@ -38,7 +38,8 @@ const byte footer_sz = 2; /* full size of footer in bytes. added as separate var
 #define PREV_BLKP(bp)  (bp - GET_BLK_SZ( HDRP(bp) - footer_sz ) )
 
 
-static void *start_heap_p;
+static void *main_heap_p;
+static void *heap_hdr;
 const unsigned heap_sz = 1<<13;
 
 const byte is_free = 0;
@@ -47,14 +48,15 @@ const byte is_alloc = 1;
 void* heap_malloc()	// initial heap init
 {
 	const unsigned full_heap_sz = heap_sz + header_sz + footer_sz;
-	start_heap_p = malloc(full_heap_sz);	// allocate mem for heap and offset header
+	main_heap_p = malloc(full_heap_sz);	// allocate mem for heap and offset header
 																										// offset header used to check end of heap
-	void *bp = start_heap_p + header_sz;					// move to start of block
+	void *bp = main_heap_p + header_sz;					// move to start of block
 
 	PUT(HDRP(bp), PACK(0, is_alloc));	//	set offset header
 	PUT(FTRP(bp), PACK(0, is_alloc));	//	set offset footer
+	heap_hdr = bp;				//	move start of heap(header) immediately after offset
 
-	bp += header_sz;	//	move to the actual heap
+	bp += header_sz;			//	move to the actual space
 
 	PUT(HDRP(bp), PACK(heap_sz, is_free));	//	set size of block and that it is free
 	PUT(FTRP(bp), PACK(heap_sz, is_free));
@@ -62,15 +64,25 @@ void* heap_malloc()	// initial heap init
 	return bp;
 }
 
+// |HDR|______space______|FTR||HDR|______space______|FTR|
+//															                              
+//		 |								 |		    |								  |
+// block start					end     block start					block end
+
 void* m_malloc(unsigned sz)
 {
 	if(sz == 0)
 		return NULL;
 
-	void *bp = start_heap_p + header_sz;					// move to start of block
+	void *bp = heap_hdr + header_sz;					// move to start of block
+	unsigned required_sz = sz + footer_sz + header_sz +1; 		//	as we devide given block in 2, we heed space for h/f to both blocks and 
+																														//	at least 1 byte of space in second part of orig block.
+																														//	Additionally, we reuse space for header and footer of the original block.
+																														//	So we need space for footer of the 1st part of original block
+																														//	and header for second part of original block
 	while(GET_BLK_SZ(bp) != 0)
 	{
-		if( GET_BLK_SZ(bp) >= sz && GET_ALLOC(bp) == 0) 
+		if( GET_BLK_SZ(bp) >= required_sz && GET_ALLOC(bp) == 0) 
 		{
 			allocate_block(&bp, sz);
 			break;
@@ -81,13 +93,25 @@ void* m_malloc(unsigned sz)
 
 	return bp;
 }
-
+//														 here starts to second part of original block
+//														|
+// |HDR|______space______|FTR||HDR|______space______|FTR|
+//															                              
+//		 |								 |		    |								  |
+// block start					end     block start					block end
 void* allocate_block(void **bp_addr, unsigned sz)
 {
 	void *bp = *bp_addr;
-	bp = bp + header_sz;
+	void *bp2 = NULL;	//	this is the second part of original block
+	unsigned orig_sz = GET_BLK_SZ(bp);
+
 	PUT(HDRP(bp), PACK(sz, is_alloc));	//	set size of block and that it is allocated 
 	PUT(FTRP(bp), PACK(sz, is_alloc));
+
+	sz = orig_sz - sz - footer_sz - header_sz;	//	sz left after allocation is what remains after required size was allocated
+	bp2 = bp + GET_BLK_SZ(bp) + footer_sz + header_sz;	// get to the second part of original block
+	PUT(HDRP(bp2), PACK(sz, is_free));	//	set size of block and that it is allocated 
+	PUT(FTRP(bp2), PACK(sz, is_free));
 
 	return bp;
 }
@@ -99,12 +123,38 @@ void m_free(void *bp)
 
 void free_block(void *bp)
 {
-	unsigned sz = GET_BLK_SZ(HDRP(bp));
-	PUT(HDRP(bp), PACK(sz, is_free));	//	set size of block and that it is freeated 
-	PUT(FTRP(bp), PACK(sz, is_free));
+	unsigned prev_sz = 0;
+	unsigned next_sz = 0;
+	unsigned sz = GET_BLK_SZ(bp);
+	unsigned free_sz = 0;
+	void *prev_bp = NULL;
+	void *next_bp = NULL;
+
+	prev_bp = PREV_BLKP(bp);
+	if(GET_ALLOC( prev_bp ) == 0 )//	check previous 
+	{
+		prev_sz = GET_BLK_SZ(prev_bp);
+		sz = GET_BLK_SZ(bp);
+		free_sz = prev_sz + sz + footer_sz + header_sz;
+
+		PUT(HDRP(prev_bp), PACK(free_sz, is_free));	//	set size of block and that it is free 
+		PUT(FTRP(prev_bp), PACK(free_sz, is_free));
+	}
+
+	next_bp = NEXT_BLKP(bp);
+	if(GET_ALLOC( next_bp ) == 0 )//	check next 
+	{
+		next_sz = GET_BLK_SZ(next_bp);
+		sz = GET_BLK_SZ(bp);
+		free_sz = next_sz + sz + footer_sz + header_sz;
+
+		PUT(HDRP(bp), PACK(free_sz, is_free));	//	set size of block and that it is free 
+		PUT(FTRP(bp), PACK(free_sz, is_free));
+	}
+
 }
 
 void heap_free()
 {
-	free(start_heap_p);
+	free(main_heap_p);
 }

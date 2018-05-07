@@ -1,11 +1,11 @@
-break func.c:67
 break func.c:72
 break func.c:84
+break func.c:111
 run
 disp bp
 disp HDRP(bp)
 disp FTRP(bp)
 disp GET_BLK_SZ(bp) 
-disp GET_BLK_SZ(bp) 
 disp GET_ALLOC(bp) 
-disp *(HDRP(bp))
+disp required_sz
+disp sz
