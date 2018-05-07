@@ -1,11 +1,15 @@
-break func.c:72
-break func.c:84
-break func.c:111
+delete break
+delete disp
+break func.c:56
+break test2
+break allocate_block
+break free_block
 run
 disp bp
 disp HDRP(bp)
 disp FTRP(bp)
 disp GET_BLK_SZ(bp) 
 disp GET_ALLOC(bp) 
+disp GET_SZ(heap_hdr)
+disp GET_ALLOC(heap_hdr)
 disp required_sz
-disp sz
