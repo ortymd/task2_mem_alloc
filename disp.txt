@@ -1,0 +1,12 @@
+disp bp
+disp HDRP(bp)
+disp FTRP(bp)
+disp GET_BLK_SZ(bp) 
+disp GET_BLK_SZ(bp) 
+disp GET_ALLOC(bp) 
+disp *(HDRP(bp))
+disp sz
+disp heap_hdr
+disp prev_bp
+disp GET_SZ(heap_hdr)
+disp GET_ALLOC(heap_hdr)
